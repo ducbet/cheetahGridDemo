@@ -1,0 +1,24 @@
+{
+  "name": "cheetahGridDemo",
+  "version": "1.0.0",
+  "description": "make sample grid by using cheetah-grid",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "json-server db.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ducbet/cheetahGridDemo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ducbet/cheetahGridDemo/issues"
+  },
+  "homepage": "https://github.com/ducbet/cheetahGridDemo#readme",
+  "dependencies": {
+    "json-server": "^0.16.3"
+  }
+}
