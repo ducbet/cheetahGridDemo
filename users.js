@@ -1,6 +1,7 @@
 fetchUsers();
 
 var grid = null;
+var filterDataSource = null;
 
 $(document).ready(function(){
     // initialize
@@ -19,15 +20,37 @@ $(document).ready(function(){
             {field: "quote", caption: "Quote", width: "auto", style: {textOverflow: "ellipsis"}},
         ]
     });
+    setupFilter();
 });
+
+function setupFilter() {
+    // add filter event
+    const filter = document.querySelector("#filter");
+    filter.addEventListener('input', () => {
+        const filterValue = filter.value;
+        filterDataSource.filter = filterValue ? (record) => {
+            // filtering method
+            for (const k in record) {
+                if ((`${record[k]}`).indexOf(filterValue) >= 0) {
+                    return true;
+                }
+            }
+            return false;
+        } : null;
+        // Please call `invalidate()`
+        grid.invalidate();
+    });
+}
 
 function fetchUsers() {
     fetch("http://localhost:3000/users")
 //    fetch("http://localhost:3000/users?_page=1&_limit=10")
     .then(res => res.json())
     .then((out) => {
-        if(grid != null) grid.records = out;
+        if(grid != null) {
+            filterDataSource = new cheetahGrid.data.FilterDataSource(new cheetahGrid.data.FilterDataSource(cheetahGrid.data.DataSource.ofArray(out)));
+            grid.dataSource = filterDataSource;
+        }
     })
     .catch(err => { throw err });
 }
-

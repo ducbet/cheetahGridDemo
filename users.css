@@ -1,5 +1,23 @@
 #users-grid {
-    height : 98vh;
+    height : 90vh;
     width : 99vw;
     border: solid 1px #ddd;
+}
+
+#filter {
+    height : 3vh;
+    width : 98.7vw;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: solid 1px #ddd;
+    font-size: 1em;
+    text-indent: 35px;
+}
+
+#search-icon {
+    position:absolute;
+    top: 15px;
+    left: 20px;
+    width: 25px;
+    height: 25px;
 }
