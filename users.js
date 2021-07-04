@@ -27,19 +27,34 @@ function setupFilter() {
     // add filter event
     const filter = document.querySelector("#filter");
     filter.addEventListener('input', () => {
-        const filterValue = filter.value;
-        filterDataSource.filter = filterValue ? (record) => {
-            // filtering method
-            for (const k in record) {
-                if ((`${record[k]}`).indexOf(filterValue) >= 0) {
-                    return true;
-                }
-            }
-            return false;
+        const filterValues = preprocessFilterValues(filter.value);
+        filterDataSource.filter = filterValues.length != 0 ? (record) => {
+            return filterByValues(filterValues, record);
         } : null;
         // Please call `invalidate()`
         grid.invalidate();
     });
+}
+
+function preprocessFilterValues(filterValues) {
+    if(typeof filterValues == "string") filterValues = filterValues.split(" ");
+    return filterValues.filter(filterValue => filterValue != "");
+}
+
+function filterByValues(filterValues, record) {
+    return filterValues.every(filterValue => filterByValue(filterValue.toLowerCase(), record));
+}
+
+function filterByValue(filterValue, record) {
+    for (const [fieldName, fieldValue] of Object.entries(record)) {
+        if(isMatch(filterValue, fieldValue)) return true;
+    }
+    return false;
+}
+
+function isMatch(filterValue, fieldValue) {
+    if(typeof fieldValue != "string") fieldValue = fieldValue.toString()
+    return fieldValue.toLowerCase().indexOf(filterValue) >= 0 ? true : false;
 }
 
 function fetchUsers() {
