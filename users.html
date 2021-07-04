@@ -11,7 +11,11 @@
 </head>
 <body>
     <i id="search-icon" class="fas fa-search"></i>
-    <input id="filter" placeholder="Type anything here to search. Each term is case-insensitive and separated by space. E.g: andrew erika">
+    <input id="filter" placeholder="Type anything here to search. Each term is case-insensitive and separated by space. E.g: andrew erika" autofocus>
+    <div id="grid-record-count-container">
+        <i class="far fa-eye count-icon"></i><label id="count-showing" class="count-label">0</label>
+        <i class="far fa-user count-icon"></i><label id="count-user" class="count-label">0</label>
+    </div>
     <div id="users-grid"></div>
 </body>
 </html>
