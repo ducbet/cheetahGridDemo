@@ -48,6 +48,17 @@ class Counter {
     }
 }
 
+var header = {
+    "id": {field: "id", caption: "ID", width: 60},
+    "name": {field: "name", caption: "Name", width: "auto"},
+    "gender": {field: "gender", caption: "Gender", width: 80},
+    "age": {field: "age", caption: "Age", width: 50},
+    "email": {field: "email", caption: "Email", width: "auto"},
+    "address": {field: "address", caption: "Address", width: "auto", style: {textOverflow: "ellipsis"}},
+    "phone_number": {field: "phone_number", caption: "Phone number", width: 200},
+    "quote": {field: "quote", caption: "Quote", width: "auto", style: {textOverflow: "ellipsis"}}
+}
+
 var counter = new Counter();
 
 $(document).ready(function(){
@@ -56,16 +67,7 @@ $(document).ready(function(){
         // Parent element on which to place the grid
         parentElement: document.querySelector("#users-grid"),
         // Header definition
-        header: [
-            {field: "id", caption: "ID", width: 60},
-            {field: "name", caption: "Name", width: "auto"},
-            {field: "gender", caption: "Gender", width: 80},
-            {field: "age", caption: "Age", width: 50},
-            {field: "email", caption: "Email", width: "auto"},
-            {field: "address", caption: "Address", width: "auto", style: {textOverflow: "ellipsis"}},
-            {field: "phone_number", caption: "Phone number", width: 200},
-            {field: "quote", caption: "Quote", width: "auto", style: {textOverflow: "ellipsis"}},
-        ]
+        header: Object.values(header)
     });
     setupFilter();
     counter.setLabels();
@@ -77,7 +79,7 @@ function setupFilter() {
     filter.addEventListener('input', () => {
         counter.resetCounter();
         const filterValues = preprocessFilterValues(filter.value);
-        filterDataSource.filter = filterValues.length != 0 ? (record) => {
+        filterDataSource.filter = !isFilterValuesEmpty(filterValues) ? (record) => {
             return filterByValues(filterValues, record);
         } : null;
         // Please call `invalidate()`
@@ -100,25 +102,62 @@ function setupFilter() {
     });
 }
 
-function preprocessFilterValues(filterValues) {
-    if(typeof filterValues == "string") filterValues = filterValues.split(" ");
-    return filterValues.filter(filterValue => filterValue != "");
+function isFilterValuesEmpty(filterValues) {
+    for (const [fieldName, terms] of Object.entries(filterValues)) {
+        if(terms.length != 0) return false;
+    }
+    return true;
+}
+
+function preprocessFilterValues(filterInput) {
+    // filterInput: str         Tammy age:20 xhardy
+    // output: dict             {"all": ["Tammy", "xhardy"], "age": ["90"]}
+    if(typeof filterInput == "string") filterInput = filterInput.split(" ");
+    filterInput = filterInput.filter(filterWord => filterWord != "");
+    filterValues = {"all": []};
+    for(let filterWord of filterInput) {
+        filterFieldValue = filterWord.split(":");
+        if(filterFieldValue.length == 1) {
+            filterValues["all"].push(filterFieldValue[0]);
+            continue;
+        }
+        fieldName = filterFieldValue[0];
+        if(!header[fieldName]) continue;
+
+        if(!filterValues[fieldName]) filterValues[fieldName] = [];
+        filterValues[fieldName].push(...extractTerms(filterFieldValue[1]));
+    }
+    return filterValues;
+}
+
+function extractTerms(terms) {
+    if(typeof terms == "string") terms = terms.split(" ");
+    return terms.filter(term => term != "");
 }
 
 function filterByValues(filterValues, record) {
-    return filterValues.every(filterValue => filterByValue(filterValue.toLowerCase(), record));
+    for (const [fieldName, terms] of Object.entries(filterValues)) {
+        // no-field-specific terms should be handle last to improve the performance
+        if(fieldName == "all") continue;
+        if(!terms.every(term => filterByValue(fieldName, term.toLowerCase(), record))) return false;
+    }
+    // handle no-field-specific terms
+    return filterValues["all"].every(filterValue => filterByValue("all", filterValue.toLowerCase(), record));
 }
 
-function filterByValue(filterValue, record) {
+function filterByValue(fieldName, term, record) {
+    if(fieldName != "all") return isMatch(term, record[fieldName]);
+
+    // handle no-field-specific terms
     for (const [fieldName, fieldValue] of Object.entries(record)) {
-        if(isMatch(filterValue, fieldValue)) return true;
+        if(isMatch(term, fieldValue)) return true;
     }
     return false;
 }
 
-function isMatch(filterValue, fieldValue) {
+function isMatch(term, fieldValue) {
     if(typeof fieldValue != "string") fieldValue = fieldValue.toString()
-    return fieldValue.toLowerCase().indexOf(filterValue) >= 0 ? true : false;
+    return fieldValue.toLowerCase().indexOf(term) >= 0 ? true : false;
 }
 
 function filterUntilLastRecord(source, filterId, filterValues, start) {
