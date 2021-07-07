@@ -3,14 +3,12 @@ import json
 import random
 
 fake = Faker()
-mock_data = {
-    "users": []
-}
+mock_data = []
 
 genders = ["Male", "Female"]
 
 for i in range(100000):
-    mock_data["users"].append({
+    mock_data.append({
         "id": i,
         "name": fake.name(),
         "gender": random.choice(genders),

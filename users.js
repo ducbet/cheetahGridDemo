@@ -206,8 +206,7 @@ function splitFilterInput(str) {
 }
 
 function fetchUsers() {
-    fetch("http://localhost:3000/users")
-//    fetch("http://localhost:3000/users?_page=1&_limit=10")
+    fetch("https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/db.json")
     .then(res => res.json())
     .then((out) => {
         if(grid != null) {
