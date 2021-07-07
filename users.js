@@ -110,29 +110,36 @@ function isFilterValuesEmpty(filterValues) {
 }
 
 function preprocessFilterValues(filterInput) {
-    // filterInput: str         Tammy age:20 xhardy
-    // output: dict             {"all": ["Tammy", "xhardy"], "age": ["90"]}
-    if(typeof filterInput == "string") filterInput = filterInput.split(" ");
-    filterInput = filterInput.filter(filterWord => filterWord != "");
+    // filterInput: str         " 1 2 3" email:"A B C" Japan :"asj qwj" h u email: 78739 a934yj quote:a
+    // output: dict             {"all": [" 1 2 3", "Japan", "asj qwj", "h", "u", "78739", "a934yj"], "email": ["A B C"], "quote": ["a"]}
+    filterInput = splitFilterInput(filter.value)
     filterValues = {"all": []};
     for(let filterWord of filterInput) {
+        // Don't need double quotes anymore
+        filterWord = filterWord.replaceAll("\"", "");
         filterFieldValue = filterWord.split(":");
         if(filterFieldValue.length == 1) {
+            // E.g1:     Japan
+            // E.g2:     " 1 2 3"
             filterValues["all"].push(filterFieldValue[0]);
             continue;
         }
         fieldName = filterFieldValue[0];
+        term = filterFieldValue[1]
+        if(fieldName == "") {
+            // E.g:     :"asj qwj"
+            filterValues["all"].push(term);
+            continue;
+        }
+        // E.g:     email:
+        if(term == "") continue;
+
         if(!header[fieldName]) continue;
 
         if(!filterValues[fieldName]) filterValues[fieldName] = [];
-        filterValues[fieldName].push(...extractTerms(filterFieldValue[1]));
+        filterValues[fieldName].push(term);
     }
     return filterValues;
-}
-
-function extractTerms(terms) {
-    if(typeof terms == "string") terms = terms.split(" ");
-    return terms.filter(term => term != "");
 }
 
 function filterByValues(filterValues, record) {
@@ -187,6 +194,15 @@ function getFilterRecord() {
 function getCursorIndex() {
     if(!isShowingFilterResult()) return 0;
     return filterDataSource["_filterData"]["_dataSourceItr"]["_curIndex"];
+}
+
+function splitFilterInput(str) {
+    // extract term inside double quotes, fieldName:term, term. Assume that terms always inside two double quotes.
+    // Eg: " 1 2 3" email:"A B C" Japan :"asj qwj" h u email: 78739 a934yj
+    // => ["\" 1 2 3\"", "email:\"A B C\"", "Japan", ":\"asj qwj\"", "h", "u", "email:", "78739", "a934yj"]
+    const regexp = /((\S*?):?(".*?")?)+/g;
+    matched = str.match(regexp);
+    return matched ? matched.filter(word => word != "") : []
 }
 
 function fetchUsers() {
