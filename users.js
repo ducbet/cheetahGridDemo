@@ -110,60 +110,94 @@ function isFilterValuesEmpty(filterValues) {
 }
 
 function preprocessFilterValues(filterInput) {
-    // filterInput: str         " 1 2 3" email:"A B C" Japan :"asj qwj" h u email: 78739 a934yj quote:a
-    // output: dict             {"all": [" 1 2 3", "Japan", "asj qwj", "h", "u", "78739", "a934yj"], "email": ["A B C"], "quote": ["a"]}
+    function isEqualTerm(term) {
+        return term.indexOf("\"") != -1 ? true : false;
+    }
+
+    function appendTerm(filterValues, scope, term) {
+        if(term == "") return;
+        scope = scope == "" ? "all" : scope;
+        if(scope != "all" && !header[scope]) return;
+
+        if(isEqualTerm(term)) {
+            term = term.replaceAll("\"", "");
+            if(!filterValues["equal"][scope]) filterValues["equal"][scope] = [];
+            filterValues["equal"][scope].push(term);
+        }
+        else {
+            if(!filterValues["like"][scope]) filterValues["like"][scope] = [];
+            filterValues["like"][scope].push(term);
+        }
+    }
+
+    // filterInput: str         name:(jessica d) email:gmail.com gender:"Male"
+    // output: dict             {"like": {"all": [], "name": ["jessica d"], "email": ["gmail.com"]}, "equal": {"all": [], "gender": ["Male"]}}
     filterInput = splitFilterInput(filter.value)
-    filterValues = {"all": []};
+    const filterValues = {"like": {"all": []}, "equal": {"all": []}};
     for(let filterWord of filterInput) {
-        // Don't need double quotes anymore
-        filterWord = filterWord.replaceAll("\"", "");
+        filterWord = filterWord.replaceAll("(", "").replaceAll(")", "");
         filterFieldValue = filterWord.split(":");
         if(filterFieldValue.length == 1) {
-            // E.g1:     Japan
-            // E.g2:     " 1 2 3"
-            filterValues["all"].push(filterFieldValue[0]);
+            appendTerm(filterValues, "all", filterFieldValue[0]);
             continue;
         }
-        fieldName = filterFieldValue[0];
-        term = filterFieldValue[1]
-        if(fieldName == "") {
-            // E.g:     :"asj qwj"
-            filterValues["all"].push(term);
-            continue;
-        }
-        // E.g:     email:
-        if(term == "") continue;
-
-        if(!header[fieldName]) continue;
-
-        if(!filterValues[fieldName]) filterValues[fieldName] = [];
-        filterValues[fieldName].push(term);
+        appendTerm(filterValues, filterFieldValue[0], filterFieldValue[1]);
     }
     return filterValues;
 }
 
 function filterByValues(filterValues, record) {
+    if(!filterByEqualTerms(filterValues["equal"], record)) return false;
+    return filterByLikeTerms(filterValues["like"], record);
+}
+
+function filterByEqualTerms(filterValues, record) {
     for (const [fieldName, terms] of Object.entries(filterValues)) {
         // no-field-specific terms should be handle last to improve the performance
         if(fieldName == "all") continue;
-        if(!terms.every(term => filterByValue(fieldName, term.toLowerCase(), record))) return false;
+        if(!terms.every(term => filterByEqualTerm(fieldName, term, record))) return false;
     }
     // handle no-field-specific terms
-    return filterValues["all"].every(filterValue => filterByValue("all", filterValue.toLowerCase(), record));
+    return filterValues["all"].every(term => filterByEqualTerm("all", term, record));
 }
 
-function filterByValue(fieldName, term, record) {
-    if(fieldName != "all") return isMatch(term, record[fieldName]);
+function filterByEqualTerm(fieldName, term, record) {
+    if(fieldName != "all") return isMatchEqualTerm(term, record[fieldName]);
 
     // handle no-field-specific terms
     for (const [fieldName, fieldValue] of Object.entries(record)) {
-        if(isMatch(term, fieldValue)) return true;
+        if(isMatchEqualTerm(term, fieldValue)) return true;
     }
     return false;
 }
 
-function isMatch(term, fieldValue) {
-    if(typeof fieldValue != "string") fieldValue = fieldValue.toString()
+function isMatchEqualTerm(term, fieldValue) {
+    if(typeof fieldValue != "string") fieldValue = fieldValue.toString();
+    return fieldValue == term ? true : false;
+}
+
+function filterByLikeTerms(filterValues, record) {
+    for (const [fieldName, terms] of Object.entries(filterValues)) {
+        // no-field-specific terms should be handle last to improve the performance
+        if(fieldName == "all") continue;
+        if(!terms.every(term => filterByLikeTerm(fieldName, term.toLowerCase(), record))) return false;
+    }
+    // handle no-field-specific terms
+    return filterValues["all"].every(term => filterByLikeTerm("all", term.toLowerCase(), record));
+}
+
+function filterByLikeTerm(fieldName, term, record) {
+    if(fieldName != "all") return isMatchLikeTerm(term, record[fieldName]);
+
+    // handle no-field-specific terms
+    for (const [fieldName, fieldValue] of Object.entries(record)) {
+        if(isMatchLikeTerm(term, fieldValue)) return true;
+    }
+    return false;
+}
+
+function isMatchLikeTerm(term, fieldValue) {
+    if(typeof fieldValue != "string") fieldValue = fieldValue.toString();
     return fieldValue.toLowerCase().indexOf(term) >= 0 ? true : false;
 }
 
@@ -197,10 +231,10 @@ function getCursorIndex() {
 }
 
 function splitFilterInput(str) {
-    // extract term inside double quotes, fieldName:term, term. Assume that terms always inside two double quotes.
-    // Eg: " 1 2 3" email:"A B C" Japan :"asj qwj" h u email: 78739 a934yj
-    // => ["\" 1 2 3\"", "email:\"A B C\"", "Japan", ":\"asj qwj\"", "h", "u", "email:", "78739", "a934yj"]
-    const regexp = /((\S*?):?(".*?")?)+/g;
+    // extract term inside double quotes, parentheses, fieldName:term, term. Assume that terms always inside two double quotes or parentheses if exist.
+    // Eg: name:(jessica d) email:gmail.com gender:"Male"
+    // => ["name:(jessica d)", "email:gmail.com", "gender:\"Male\""]
+    const regexp = /((\S*?):?(["(].*?[")])?)+/g;
     matched = str.match(regexp);
     return matched ? matched.filter(word => word != "") : []
 }
