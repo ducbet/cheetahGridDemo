@@ -53,7 +53,7 @@ var header = {
     "name": {field: "name", caption: "Name", width: "auto"},
     "gender": {field: "gender", caption: "Gender", width: 80},
     "age": {field: "age", caption: "Age", width: 50},
-    "country": {field: "country", caption: "Country", width: 120},
+    "country": {field: "country", caption: "Country", width: 80, columnType: 'image', style: {imageSizing: 'keep-aspect-ratio'}},
     "email": {field: "email", caption: "Email", width: "auto"},
     "address": {field: "address", caption: "Address", width: "auto", style: {textOverflow: "ellipsis"}},
     "phone_number": {field: "phone_number", caption: "Phone number", width: 200},
@@ -240,11 +240,33 @@ function splitFilterInput(str) {
     return matched ? matched.filter(word => word != "") : []
 }
 
+class CountryFlagProcessor {
+    constructor() {
+        this.baseUrl = "https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/";
+        this.flags_url = {}
+    }
+
+    setFlagImages(dataSource) {
+        for(let user of dataSource) {
+            let flag_url = this.flags_url[user["country"]];
+            if(flag_url) {
+                user["country"] = flag_url;
+                continue;
+            }
+            flag_url = this.baseUrl + user["country"].replace(" ", "_") + ".png";
+            this.flags_url[user["country"]] = flag_url;
+            user["country"] = flag_url;
+        }
+    }
+}
+
 function fetchUsers() {
     fetch("https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/db.json")
     .then(res => res.json())
     .then((out) => {
         if(grid != null) {
+            flagProcessor = new CountryFlagProcessor();
+            flagProcessor.setFlagImages(out);
             filterDataSource = new cheetahGrid.data.FilterDataSource(new cheetahGrid.data.FilterDataSource(cheetahGrid.data.DataSource.ofArray(out)));
             grid.dataSource = filterDataSource;
 
