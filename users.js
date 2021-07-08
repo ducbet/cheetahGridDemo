@@ -53,6 +53,7 @@ var header = {
     "name": {field: "name", caption: "Name", width: "auto"},
     "gender": {field: "gender", caption: "Gender", width: 80},
     "age": {field: "age", caption: "Age", width: 50},
+    "country": {field: "country", caption: "Country", width: 120},
     "email": {field: "email", caption: "Email", width: "auto"},
     "address": {field: "address", caption: "Address", width: "auto", style: {textOverflow: "ellipsis"}},
     "phone_number": {field: "phone_number", caption: "Phone number", width: 200},
