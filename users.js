@@ -14,6 +14,8 @@ class Counter {
 
         this.allUsers = 0;
         this.showingUsers = 0;
+        this.showingMale = 0;
+        this.showingFemale = 0;
         this.showingCountry = {};
 
         this.black = "#000";
@@ -23,11 +25,15 @@ class Counter {
     setLabels() {
         this.allUsersLabel = $("#count-user");
         this.showingUsersLabel = $("#count-showing");
+        this.showingMaleLabel = $("#count-male");
+        this.showingFemaleLabel = $("#count-female");
     }
 
     updateLabels() {
         this.allUsersLabel.text(this.allUsers);
         this.showingUsersLabel.text(this.showingUsers);
+        this.showingMaleLabel.text(this.showingMale);
+        this.showingFemaleLabel.text(this.showingFemale);
         for (var country of this.getCountries()) {
             this.countries_label[country].text(this.showingCountry[country]);
         }
@@ -38,6 +44,8 @@ class Counter {
 
     changeLabelsColor(color) {
         this.showingUsersLabel.css("color", color);
+        this.showingMaleLabel.css("color", color);
+        this.showingFemaleLabel.css("color", color);
         for (var country of this.getCountries()) {
             this.countries_label[country].css("color", color);
         }
@@ -47,6 +55,8 @@ class Counter {
         this.filterId++;
 
         this.showingUsers = 0;
+        this.showingMale = 0;
+        this.showingFemale = 0;
         for (var country of this.getCountries()) {
             this.showingCountry[country] = 0;
         }
@@ -58,6 +68,8 @@ class Counter {
     increaseMatch(filterId, record) {
         if(this.filterSessionExpired(filterId)) return;
         this.showingUsers++;
+        if(record["gender"] == "Male") this.showingMale++;
+        else this.showingFemale++;
         this.showingCountry[this.getCountryName(record["country"])] += 1;
     }
 
