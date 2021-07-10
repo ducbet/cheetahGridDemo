@@ -1,15 +1,20 @@
-fetchUsers();
-
-var grid = null;
-var filterDataSource = new cheetahGrid.data.FilterDataSource(new cheetahGrid.data.FilterDataSource(cheetahGrid.data.DataSource.ofArray([])));
-
 class Counter {
     constructor() {
         this.countChunkSize = 1000;
         this.filterId = 0;
 
+        // for countries flag
+        this.baseUrl = "https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/";
+        // {"Vietnam": "https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/Vietnam.png"}
+        this.flags_url = {};
+        // {"https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/Vietnam.png": "Vietnam"}
+        this.flags_url_inverted = {};
+        // {"Vietnam": jquery label}
+        this.countries_label = {}
+
         this.allUsers = 0;
         this.showingUsers = 0;
+        this.showingCountry = {};
 
         this.black = "#000";
         this.gray = "#D3D3D3";
@@ -23,42 +28,162 @@ class Counter {
     updateLabels() {
         this.allUsersLabel.text(this.allUsers);
         this.showingUsersLabel.text(this.showingUsers);
+        for (var country of this.getCountries()) {
+            this.countries_label[country].text(this.showingCountry[country]);
+        }
+        this.countries_label[country]
+
         this.changeLabelsColor(this.black);
     }
 
     changeLabelsColor(color) {
         this.showingUsersLabel.css("color", color);
+        for (var country of this.getCountries()) {
+            this.countries_label[country].css("color", color);
+        }
     }
 
     resetCounter() {
         this.filterId++;
 
         this.showingUsers = 0;
+        for (var country of this.getCountries()) {
+            this.showingCountry[country] = 0;
+        }
+
         this.updateLabels();
         this.changeLabelsColor(this.gray);
     }
 
-    increaseMatch(filterId) {
+    increaseMatch(filterId, record) {
         if(this.filterSessionExpired(filterId)) return;
         this.showingUsers++;
+        this.showingCountry[this.getCountryName(record["country"])] += 1;
     }
 
     filterSessionExpired(filterId) {
         return filterId < this.filterId ? true : false;
     }
+
+    // countries flag
+    setFlagImages(dataSource) {
+        for(let user of dataSource) {
+            user["country"] = this.getCountryImgUrl(user["country"])
+        }
+    }
+
+    addCountryLogos() {
+        var countries = this.getCountries();
+        for(var country of countries) {
+            this.addCountryLogo(country);
+        }
+    }
+
+    addCountryLogo(country) {
+        var count_container = $("#grid-record-count-container");
+        count_container.append(this.createCountryIcon(country));
+        count_container.append(this.createCountryCountLabel(country));
+    }
+
+    createCountryIcon(country) {
+        var countryImgTag = $("<img></img>");
+        countryImgTag.attr("src", this.getCountryImgUrl(country));
+        countryImgTag.attr("id", this.standardizeCountryName(country) + "-img");
+        countryImgTag.addClass("count-icon filterable-icon");
+        countryImgTag.dblclick(() => {
+            appendAndTriggerFilterWithNewValue(" country:\"" + country + "\" ");
+        })
+        return countryImgTag;
+    }
+
+    createCountryCountLabel(country) {
+        var countryCountLabel = $("<label>0</label>");
+        countryCountLabel.attr("id", "count-" + this.standardizeCountryName(country));
+        countryCountLabel.addClass("count-label");
+        this.countries_label[country] = countryCountLabel;
+        return countryCountLabel;
+    }
+
+    getCountryImgUrl(country) {
+        if(this.flags_url[country] == undefined) this.addCountry(country);
+        return this.flags_url[country];
+    }
+
+    addCountry(country) {
+        var imgUrl = this.baseUrl + this.getCountryImgName(country)
+        this.flags_url[country] = imgUrl;
+        this.flags_url_inverted[imgUrl] = country;
+        this.showingCountry[country] = 0;
+    }
+
+    getCountryImgName(country) {
+        return this.standardizeCountryName(country) + ".png";
+    }
+
+    getCountryName(countryImgUrl) {
+        // get country name from country img url
+        return this.flags_url_inverted[countryImgUrl];
+    }
+
+    standardizeCountryName(country) {
+        return country.replace(" ", "_");
+    }
+
+    getCountries() {
+        return Object.keys(this.flags_url);
+    }
 }
 
 var header = {
-    "id": {field: "id", caption: "ID", width: 60},
-    "name": {field: "name", caption: "Name", width: "auto"},
-    "gender": {field: "gender", caption: "Gender", width: 80},
-    "age": {field: "age", caption: "Age", width: 50},
-    "country": {field: "country", caption: "Country", width: 80, columnType: 'image', style: {imageSizing: 'keep-aspect-ratio'}},
-    "email": {field: "email", caption: "Email", width: "auto"},
-    "address": {field: "address", caption: "Address", width: "auto", style: {textOverflow: "ellipsis"}},
-    "phone_number": {field: "phone_number", caption: "Phone number", width: 200},
-    "quote": {field: "quote", caption: "Quote", width: "auto", style: {textOverflow: "ellipsis"}}
+    "id": {
+        field: "id", caption: "ID", width: 60,
+    },
+    "name": {
+        field: "name", caption: "Name", width: "auto",
+        // custom properties
+        "filterable": true
+    },
+    "gender": {
+        field: "gender", caption: "Gender", width: 80,
+        // custom properties
+        "filterable": true
+    },
+    "age": {
+        field: "age", caption: "Age", width: 50,
+        // custom properties
+        "filterable": true
+    },
+    "country": {
+        field: "country", caption: "Country", width: 80, columnType: 'image', style: {imageSizing: 'keep-aspect-ratio'},
+        // custom properties
+        "filterable": true, "icon_search": true
+    },
+    "email": {
+        field: "email", caption: "Email", width: "auto",
+        // custom properties
+        "filterable": true
+    },
+    "address": {
+        field: "address", caption: "Address", width: "auto", style: {textOverflow: "ellipsis"},
+        // custom properties
+        "filterable": true
+    },
+    "phone_number": {
+        field: "phone_number", caption: "Phone number", width: 200,
+        // custom properties
+        "filterable": true
+    },
+    "quote": {
+        field: "quote", caption: "Quote", width: "auto", style: {textOverflow: "ellipsis"},
+        // custom properties
+        "filterable": true
+    }
 }
+
+fetchUsers();
+
+var grid = null;
+var filterDataSource = new cheetahGrid.data.FilterDataSource(new cheetahGrid.data.FilterDataSource(cheetahGrid.data.DataSource.ofArray([])));
 
 var counter = new Counter();
 
@@ -104,7 +229,7 @@ function setupFilter() {
 }
 
 function isFilterValuesEmpty(filterValues) {
-    for (const [fieldName, terms] of Object.entries(filterValues)) {
+    for (const [scope, terms] of Object.entries(filterValues)) {
         if(terms.length != 0) return false;
     }
     return true;
@@ -153,52 +278,62 @@ function filterByValues(filterValues, record) {
 }
 
 function filterByEqualTerms(filterValues, record) {
-    for (const [fieldName, terms] of Object.entries(filterValues)) {
+    for (const [scope, terms] of Object.entries(filterValues)) {
         // no-field-specific terms should be handle last to improve the performance
-        if(fieldName == "all") continue;
-        if(!terms.every(term => filterByEqualTerm(fieldName, term, record))) return false;
+        if(scope == "all") continue;
+        if(!terms.every(term => filterByEqualTerm(scope, term, record))) return false;
     }
     // handle no-field-specific terms
     return filterValues["all"].every(term => filterByEqualTerm("all", term, record));
 }
 
-function filterByEqualTerm(fieldName, term, record) {
-    if(fieldName != "all") return isMatchEqualTerm(term, record[fieldName]);
+function filterByEqualTerm(scope, term, record) {
+    if(scope != "all" && header[scope]["filterable"] == true) return isMatchEqualTerm(term, record[scope], header[scope]["icon_search"]);
 
     // handle no-field-specific terms
     for (const [fieldName, fieldValue] of Object.entries(record)) {
-        if(isMatchEqualTerm(term, fieldValue)) return true;
+        if(header[fieldName]["filterable"] != true) continue;
+        if(isMatchEqualTerm(term, fieldValue, header[fieldName]["icon_search"])) return true;
     }
     return false;
 }
 
-function isMatchEqualTerm(term, fieldValue) {
+function isMatchEqualTerm(term, fieldValue, iconSearch) {
     if(typeof fieldValue != "string") fieldValue = fieldValue.toString();
+    if(iconSearch) {
+        iconImgName = counter.getCountryImgName(term);
+        return fieldValue.endsWith(iconImgName);
+    }
     return fieldValue == term ? true : false;
 }
 
 function filterByLikeTerms(filterValues, record) {
-    for (const [fieldName, terms] of Object.entries(filterValues)) {
+    for (const [scope, terms] of Object.entries(filterValues)) {
         // no-field-specific terms should be handle last to improve the performance
-        if(fieldName == "all") continue;
-        if(!terms.every(term => filterByLikeTerm(fieldName, term.toLowerCase(), record))) return false;
+        if(scope == "all") continue;
+        if(!terms.every(term => filterByLikeTerm(scope, term.toLowerCase(), record))) return false;
     }
     // handle no-field-specific terms
     return filterValues["all"].every(term => filterByLikeTerm("all", term.toLowerCase(), record));
 }
 
-function filterByLikeTerm(fieldName, term, record) {
-    if(fieldName != "all") return isMatchLikeTerm(term, record[fieldName]);
+function filterByLikeTerm(scope, term, record) {
+    if(scope != "all" && header[scope]["filterable"] == true) return isMatchLikeTerm(term, record[scope], header[scope]["icon_search"]);
 
     // handle no-field-specific terms
     for (const [fieldName, fieldValue] of Object.entries(record)) {
-        if(isMatchLikeTerm(term, fieldValue)) return true;
+        if(header[fieldName]["filterable"] != true) continue;
+        if(isMatchLikeTerm(term, fieldValue, header[fieldName]["icon_search"])) return true;
     }
     return false;
 }
 
-function isMatchLikeTerm(term, fieldValue) {
+function isMatchLikeTerm(term, fieldValue, iconSearch) {
     if(typeof fieldValue != "string") fieldValue = fieldValue.toString();
+    if(iconSearch) {
+        iconImgName = counter.getCountryImgName(term);
+        return fieldValue.endsWith(iconImgName);
+    }
     return fieldValue.toLowerCase().indexOf(term) >= 0 ? true : false;
 }
 
@@ -240,24 +375,15 @@ function splitFilterInput(str) {
     return matched ? matched.filter(word => word != "") : []
 }
 
-class CountryFlagProcessor {
-    constructor() {
-        this.baseUrl = "https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/";
-        this.flags_url = {}
-    }
+function appendAndTriggerFilterWithNewValue(appendInput) {
+    const filter = document.querySelector("#filter");
+    filter.value += appendInput;
+    triggerFilter(filter);
+}
 
-    setFlagImages(dataSource) {
-        for(let user of dataSource) {
-            let flag_url = this.flags_url[user["country"]];
-            if(flag_url) {
-                user["country"] = flag_url;
-                continue;
-            }
-            flag_url = this.baseUrl + user["country"].replace(" ", "_") + ".png";
-            this.flags_url[user["country"]] = flag_url;
-            user["country"] = flag_url;
-        }
-    }
+function triggerFilter(filter=null) {
+    if(filter == null) filter = document.querySelector("#filter");
+    filter.dispatchEvent(new Event("input"));
 }
 
 function fetchUsers() {
@@ -265,14 +391,12 @@ function fetchUsers() {
     .then(res => res.json())
     .then((out) => {
         if(grid != null) {
-            flagProcessor = new CountryFlagProcessor();
-            flagProcessor.setFlagImages(out);
+            counter.setFlagImages(out);
+            counter.addCountryLogos();
             filterDataSource = new cheetahGrid.data.FilterDataSource(new cheetahGrid.data.FilterDataSource(cheetahGrid.data.DataSource.ofArray(out)));
             grid.dataSource = filterDataSource;
 
-            // trigger filter
-            const filter = document.querySelector("#filter");
-            filter.dispatchEvent(new Event("input"));
+            triggerFilter();
         }
         counter.allUsers = out.length;
         counter.updateLabels();

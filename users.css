@@ -32,6 +32,8 @@
 
 .count-icon {
     font-size: 1.3em;
+    height: 20px;
+    width: auto;
 }
 
 .count-label {
@@ -39,4 +41,8 @@
     display: inline-block;
     margin-left: 5px;
     color: #D3D3D3;
+}
+
+.filterable-icon {
+    cursor: pointer;
 }
