@@ -180,6 +180,26 @@ var header = {
     }
 }
 
+const {
+  CLICK_CELL,
+  DBLCLICK_CELL,
+  DBLTAP_CELL,
+  MOUSEDOWN_CELL,
+  MOUSEUP_CELL,
+  SELECTED_CELL,
+  KEYDOWN,
+  MOUSEMOVE_CELL,
+  MOUSEENTER_CELL,
+  MOUSELEAVE_CELL,
+  MOUSEOVER_CELL,
+  MOUSEOUT_CELL,
+  INPUT_CELL,
+  PASTE_CELL,
+  RESIZE_COLUMN,
+  SCROLL,
+  CHANGED_VALUE,
+} = cheetahGrid.ListGrid.EVENT_TYPE;
+
 fetchUsers();
 
 var grid = null;
@@ -197,6 +217,7 @@ $(document).ready(function(){
     });
     setupFilter();
     counter.setLabels();
+    grid.listen(DBLCLICK_CELL, (...args) => addCellDbClickEvent(args));
 });
 
 function setupFilter() {
@@ -373,6 +394,29 @@ function splitFilterInput(str) {
     const regexp = /((\S*?):?(["(].*?[")])?)+/g;
     matched = str.match(regexp);
     return matched ? matched.filter(word => word != "") : []
+}
+
+function addCellDbClickEvent(args) {
+    row = args[0]["row"];
+    // ignore header
+    if(row == 0) return;
+    row -= 1;
+    col = args[0]["col"];
+    fieldName = grid.header[col]["field"];
+    cellValue = getClickedRow(row)[fieldName];
+
+    iconSearch = grid.header[col]["icon_search"] ? true: false;
+    if(iconSearch) {
+        appendAndTriggerFilterWithNewValue(" " + fieldName + ":" + "\"" + counter.getCountryName(cellValue) + "\"");
+    }
+    else {
+        appendAndTriggerFilterWithNewValue(" " + fieldName + ":" + "\"" + cellValue + "\"");
+    }
+}
+
+function getClickedRow(row) {
+    if(isShowingFilterResult()) return getFilterRecord()[row];
+    return row;
 }
 
 function appendAndTriggerFilterWithNewValue(appendInput) {
