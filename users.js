@@ -119,7 +119,7 @@ class Counter {
         countryImgTag.attr("id", this.standardizeCountryName(country) + "-img");
         countryImgTag.addClass("count-icon filterable-icon");
         countryImgTag.dblclick(() => {
-            appendAndTriggerFilterWithNewValue(" country:\"" + country + "\" ");
+            appendAndTriggerFilterWithNewValue(" \"" + country + "\":country ");
         });
         return countryImgTag;
     }
@@ -194,7 +194,7 @@ class Counter {
         birthdayIcon.attr("id", "age-img-" + age);
         birthdayIcon.addClass("fa fa-birthday-cake count-icon filterable-icon");
         birthdayIcon.dblclick(() => {
-            appendAndTriggerFilterWithNewValue(" age:\"" + age + "\" ");
+            appendAndTriggerFilterWithNewValue(" \"" + age + "\":age ");
         });
         return birthdayIcon;
     }
@@ -363,7 +363,7 @@ function preprocessFilterValues(filterInput) {
         }
     }
 
-    // filterInput: str         name:(jessica d) email:gmail.com gender:"Male"
+    // filterInput: str         (jessica d):name gmail.com:email "Male":gender
     // output: dict             {"like": {"all": [], "name": ["jessica d"], "email": ["gmail.com"]}, "equal": {"all": [], "gender": ["Male"]}}
     filterInput = splitFilterInput(filter.value)
     const filterValues = {"like": {"all": []}, "equal": {"all": []}};
@@ -374,7 +374,7 @@ function preprocessFilterValues(filterInput) {
             appendTerm(filterValues, "all", filterFieldValue[0]);
             continue;
         }
-        appendTerm(filterValues, filterFieldValue[0], filterFieldValue[1]);
+        appendTerm(filterValues, filterFieldValue[1], filterFieldValue[0]);
     }
     return optimizeEqualFilterValues(filterValues);
 }
@@ -390,7 +390,7 @@ function optimizeEqualFilterValues(filterValues) {
         // replace filter value (but not trigger input event)
         const filter = document.querySelector("#filter");
         // remove the term number 0
-        filter.value = filter.value.replace(scope + ":\"" + terms[0] + "\" ", "").replace("  ", " ");
+        filter.value = filter.value.replace("\"" + terms[0] + "\":" + scope + " ", "").replace("  ", " ");
     }
     return filterValues;
 }
@@ -490,9 +490,9 @@ function getCursorIndex() {
 
 function splitFilterInput(str) {
     // extract term inside double quotes, parentheses, fieldName:term, term. Assume that terms always inside two double quotes or parentheses if exist.
-    // Eg: name:(jessica d) email:gmail.com gender:"Male"
+    // Eg: (jessica d):name gmail.com:email "Male":gender
     // => ["name:(jessica d)", "email:gmail.com", "gender:\"Male\""]
-    const regexp = /((\S*?):?(["(].*?[")])?)+/g;
+    const regexp = /((["(].*?[")])?:?(\S*?))+/g;
     matched = str.match(regexp);
     return matched ? matched.filter(word => word != "") : []
 }
@@ -500,10 +500,10 @@ function splitFilterInput(str) {
 function addDblClickEvents() {
     grid.listen(DBLCLICK_CELL, (...args) => addCellDbClickEvent(args));
     $("#male-img").dblclick(() => {
-        appendAndTriggerFilterWithNewValue(" gender:\"Male\" ");
+        appendAndTriggerFilterWithNewValue(" \"Male\":gender ");
     });
     $("#female-img").dblclick(() => {
-        appendAndTriggerFilterWithNewValue(" gender:\"Female\" ");
+        appendAndTriggerFilterWithNewValue(" \"Female\":gender ");
     });
     $("#user-img").dblclick(() => {
         const filter = document.querySelector("#filter");
@@ -523,10 +523,10 @@ function addCellDbClickEvent(args) {
 
     iconSearch = grid.header[col]["icon_search"] ? true: false;
     if(iconSearch) {
-        appendAndTriggerFilterWithNewValue(" " + fieldName + ":" + "\"" + counter.getCountryName(cellValue) + "\"");
+        appendAndTriggerFilterWithNewValue(" \"" + counter.getCountryName(cellValue) + "\":" + fieldName + " ");
     }
     else {
-        appendAndTriggerFilterWithNewValue(" " + fieldName + ":" + "\"" + cellValue + "\"");
+        appendAndTriggerFilterWithNewValue(" \"" + cellValue + "\":" + fieldName + " ");
     }
 }
 
@@ -538,6 +538,7 @@ function getClickedRow(row) {
 function appendAndTriggerFilterWithNewValue(appendInput) {
     const filter = document.querySelector("#filter");
     filter.value += appendInput;
+    filter.value = filter.value.replace("  ", " ");
     triggerFilter(filter);
 }
 
@@ -569,14 +570,14 @@ function fetchUsers() {
 // jquery ui autocomplete
 $( function() {
     var availableTags = [
-      "name:",
-      "gender:",
-      "age:",
-      "country:",
-      "email:",
-      "address:",
-      "phone_number:",
-      "quote:",
+      ":name",
+      ":gender",
+      ":age",
+      ":country",
+      ":email",
+      ":address",
+      ":phone_number",
+      ":quote",
     ];
     function split( val ) {
       return val.split( /,\s*/ );
