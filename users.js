@@ -366,6 +366,22 @@ function preprocessFilterValues(filterInput) {
         }
         appendTerm(filterValues, filterFieldValue[0], filterFieldValue[1]);
     }
+    return optimizeEqualFilterValues(filterValues);
+}
+
+function optimizeEqualFilterValues(filterValues) {
+    for(const scope of Object.keys(filterValues["equal"])) {
+        if(scope == "all") continue;
+        terms = filterValues["equal"][scope]
+        if(terms == undefined || terms.length <= 1) continue;
+        // max terms.length is 2
+        // only accept the last equal term (1)
+        filterValues["equal"][scope] = [terms[1]];
+        // replace filter value (but not trigger input event)
+        const filter = document.querySelector("#filter");
+        // remove the term number 0
+        filter.value = filter.value.replace(scope + ":\"" + terms[0] + "\" ", "");
+    }
     return filterValues;
 }
 
