@@ -579,12 +579,19 @@ $( function() {
       ":phone_number",
       ":quote",
     ];
-    function split( val ) {
-      return val.split( /,\s*/ );
+    function split(filterInput) {
+      return filterInput.split(" ").filter(word => word != "");
     }
-    function extractLast( term ) {
-      return split( term ).pop();
+    function sliceFromColon(lastTerm) {
+        colonIndex = lastTerm.lastIndexOf(":");
+        if(colonIndex != -1) return lastTerm.slice(colonIndex, lastTerm.length);
+        return lastTerm;
     }
+    function extractLast(filterInput) {
+        lastTerm = split(filterInput).pop();
+        return sliceFromColon(lastTerm);
+    }
+    minLengthWithoutColon = 3;
 
     $( "#filter" )
       // don't navigate away from the field on tab when selecting an item
@@ -595,7 +602,9 @@ $( function() {
         }
       })
       .autocomplete({
-        minLength: 3,
+        minLength: 1,
+        delay: 0,
+        autoFocus: true,
         source: function( request, response ) {
           // delegate back to autocomplete, but extract the last term
           response( $.ui.autocomplete.filter(
@@ -608,13 +617,27 @@ $( function() {
         select: function( event, ui ) {
           var terms = split( this.value );
           // remove the current input
-          terms.pop();
-          // add the selected item
-          terms.push( ui.item.value );
-          // add placeholder to get the comma-and-space at the end
+          lastTerm = terms.pop();
+          if(lastTerm.lastIndexOf(":") != -1) {
+            // replace :the-first-char-of-fieldname with :fieldname. E.g:   :a -> :age
+            terms.push( lastTerm.replace(sliceFromColon(lastTerm), ui.item.value));
+          }
+          else {
+            // add the selected item
+            terms.push( ui.item.value );
+          }
+          // add placeholder to get space at the end
           terms.push( "" );
-          this.value = terms.join( ", " );
+          this.value = terms.join(" ");
+
+          triggerFilter();
           return false;
+        },
+        search: function( event, ui ) {
+            lastTerm = extractLast(this.value)
+            if(availableTags.indexOf(lastTerm) != -1) event.preventDefault();
+            if(lastTerm.lastIndexOf(":") != -1) return true;
+            if(lastTerm.length < minLengthWithoutColon) event.preventDefault();
         }
       });
   } );
