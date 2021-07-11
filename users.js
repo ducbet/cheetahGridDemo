@@ -505,6 +505,11 @@ function addDblClickEvents() {
     $("#female-img").dblclick(() => {
         appendAndTriggerFilterWithNewValue(" gender:\"Female\" ");
     });
+    $("#user-img").dblclick(() => {
+        const filter = document.querySelector("#filter");
+        filter.value = "";
+        triggerFilter(filter);
+    });
 }
 
 function addCellDbClickEvent(args) {
