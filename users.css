@@ -46,3 +46,7 @@
 .filterable-icon {
     cursor: pointer;
 }
+
+.display-none {
+    display: none;
+}
