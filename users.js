@@ -300,7 +300,7 @@ $(document).ready(function(){
     });
     setupFilter();
     counter.setLabels();
-    grid.listen(DBLCLICK_CELL, (...args) => addCellDbClickEvent(args));
+    addDblClickEvents()
 });
 
 function setupFilter() {
@@ -484,6 +484,16 @@ function splitFilterInput(str) {
     const regexp = /((\S*?):?(["(].*?[")])?)+/g;
     matched = str.match(regexp);
     return matched ? matched.filter(word => word != "") : []
+}
+
+function addDblClickEvents() {
+    grid.listen(DBLCLICK_CELL, (...args) => addCellDbClickEvent(args));
+    $("#male-img").dblclick(() => {
+        appendAndTriggerFilterWithNewValue(" gender:\"Male\" ");
+    });
+    $("#female-img").dblclick(() => {
+        appendAndTriggerFilterWithNewValue(" gender:\"Female\" ");
+    });
 }
 
 function addCellDbClickEvent(args) {
