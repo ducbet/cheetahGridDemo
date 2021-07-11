@@ -319,16 +319,8 @@ function setupFilter() {
             // setTimeout to make sure the previous filter was cancelled completely
             // reset again to make sure counter is reset before the next counting
             counter.resetCounter();
-            if(isShowingFilterResult()) {
-                // count in filtered records
-                filterUntilLastRecord(getFilterRecord(), counter.filterId, filterValues, start = 0);
-                // count in the rest
-                filterUntilLastRecord(filterDataSource["_source"], counter.filterId, filterValues, start = getCursorIndex() + 1);
-            }
-            else {
-                // count in all records
-                filterUntilLastRecord(filterDataSource["_source"], counter.filterId, filterValues, start = 0);
-            }
+            // count in all records
+            filterUntilLastRecord(filterDataSource["_source"], counter.filterId, filterValues, start = 0);
         });
     });
 }
