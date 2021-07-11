@@ -36,7 +36,7 @@ class Counter {
         this.showingFemaleLabel = $("#count-female");
     }
 
-    updateLabels() {
+    updateLabels(done=false) {
         this.allUsersLabel.text(this.allUsers);
         this.showingUsersLabel.text(this.showingUsers);
         this.showingMaleLabel.text(this.showingMale);
@@ -48,8 +48,7 @@ class Counter {
             this.countriesLabel[country].text(this.showingCountry[country]);
         }
         this.displayTopAges();
-
-        this.changeLabelsColor(this.black);
+        if(done) this.changeLabelsColor(this.black);
     }
 
     changeLabelsColor(color) {
@@ -77,7 +76,7 @@ class Counter {
             this.showingCountry[country] = 0;
         }
 
-        this.updateLabels();
+        this.updateLabels(true);
         this.changeLabelsColor(this.gray);
     }
 
@@ -380,7 +379,7 @@ function optimizeEqualFilterValues(filterValues) {
         // replace filter value (but not trigger input event)
         const filter = document.querySelector("#filter");
         // remove the term number 0
-        filter.value = filter.value.replace(scope + ":\"" + terms[0] + "\" ", "");
+        filter.value = filter.value.replace(scope + ":\"" + terms[0] + "\" ", "").replace("  ", " ");
     }
     return filterValues;
 }
@@ -457,10 +456,11 @@ function filterUntilLastRecord(source, filterId, filterValues, start) {
         if(i % counter.countChunkSize == 100) {
             // avoid call setTimeout if start == 0
             setTimeout(() => filterUntilLastRecord(source, filterId, filterValues, i + 1));
+            counter.updateLabels();
             return;
         }
     }
-    if(i == filterDataSource["_source"].length) counter.updateLabels();
+    if(i == filterDataSource["_source"].length) counter.updateLabels(done=true);
 }
 
 function isShowingFilterResult() {
@@ -534,7 +534,7 @@ function fetchUsers() {
             triggerFilter();
         }
         counter.allUsers = out.length;
-        counter.updateLabels();
+        counter.updateLabels(done=true);
         counter.allUsersLabel.css("color", counter.black);
     })
     .catch(err => { throw err });
