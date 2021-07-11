@@ -120,7 +120,7 @@ class Counter {
         countryImgTag.addClass("count-icon filterable-icon");
         countryImgTag.dblclick(() => {
             appendAndTriggerFilterWithNewValue(" country:\"" + country + "\" ");
-        })
+        });
         return countryImgTag;
     }
 
@@ -179,18 +179,29 @@ class Counter {
     createAgeContainer(age) {
         var ageContainer = $("<div></div>");
         ageContainer.addClass("display-none");
+        ageContainer.append(this.createAgeLabel(age));
         ageContainer.append(this.createAgeIcon(age));
         ageContainer.append(this.createAgeCountLabel(age));
         return ageContainer;
     }
 
+    createAgeLabel(age){
+        return $("<label>" + age + " </label>");
+    }
+
     createAgeIcon(age){
-        return $("<label>" + age + " </label><i class='fa fa-birthday-cake count-icon'></i>");
+        var birthdayIcon = $("<i></i>");
+        birthdayIcon.attr("id", "age-img-" + age);
+        birthdayIcon.addClass("fa fa-birthday-cake count-icon filterable-icon");
+        birthdayIcon.dblclick(() => {
+            appendAndTriggerFilterWithNewValue(" age:\"" + age + "\" ");
+        });
+        return birthdayIcon;
     }
 
     createAgeCountLabel(age){
         var ageCountLabel = $("<label>0</label>");
-        ageCountLabel.attr("id", "count-age" + age);
+        ageCountLabel.attr("id", "count-age-" + age);
         ageCountLabel.addClass("count-label");
         this.agesLabel[age] = ageCountLabel;
         return ageCountLabel;
