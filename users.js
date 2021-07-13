@@ -230,45 +230,54 @@ class Counter {
 
 var header = {
     "id": {
-        field: "id", caption: "ID", width: 60,
+        field: "id", caption: "ID", width: 70,
+        headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
     },
     "name": {
-        field: "name", caption: "Name", width: "auto",
+        field: "name", caption: "Name", width: 230,
+        headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
         "filterable": true
     },
     "gender": {
-        field: "gender", caption: "Gender", width: 80,
+        field: "gender", caption: "Gender", width: 90,
+        headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
         "filterable": true
     },
     "age": {
-        field: "age", caption: "Age", width: 50,
+        field: "age", caption: "Age", width: 60,
+        headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
         "filterable": true
     },
     "country": {
-        field: "country", caption: "Country", width: 80, columnType: 'image', style: {imageSizing: 'keep-aspect-ratio'},
+        field: "country", caption: "Country", width: 90, columnType: 'image', style: {imageSizing: 'keep-aspect-ratio'},
+        headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
         "filterable": true, "icon_search": true
     },
     "email": {
-        field: "email", caption: "Email", width: "auto",
+        field: "email", caption: "Email", width: 300,
+        headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
         "filterable": true
     },
     "address": {
         field: "address", caption: "Address", width: "auto", style: {textOverflow: "ellipsis"},
+        headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
         "filterable": true
     },
     "phone_number": {
-        field: "phone_number", caption: "Phone number", width: 200,
+        field: "phone_number", caption: "Phone number", width: 210,
+        headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
         "filterable": true
     },
     "quote": {
         field: "quote", caption: "Quote", width: "auto", style: {textOverflow: "ellipsis"},
+        headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
         "filterable": true
     }
@@ -478,6 +487,10 @@ function isShowingFilterResult() {
     return filterDataSource["_filterData"] ? true : false;
 }
 
+function isGridSorted() {
+    return filterDataSource["_dataSource"]["_sortedIndexMap"] != undefined ? true : false;
+}
+
 function getFilterRecord() {
     if(filterDataSource["_filterData"] == undefined) return filterDataSource["_source"];
     return filterDataSource["_filterData"]["_filterdList"];
@@ -486,6 +499,10 @@ function getFilterRecord() {
 function getCursorIndex() {
     if(!isShowingFilterResult()) return 0;
     return filterDataSource["_filterData"]["_dataSourceItr"]["_curIndex"];
+}
+
+function getSortedIndexMap() {
+    return filterDataSource["_dataSource"]["_sortedIndexMap"];
 }
 
 function splitFilterInput(str) {
@@ -531,8 +548,8 @@ function addCellDbClickEvent(args) {
 }
 
 function getClickedRow(row) {
-    if(isShowingFilterResult()) return getFilterRecord()[row];
-    return row;
+    if(isGridSorted()) return getSortedIndexMap()[row];
+    return getFilterRecord()[row];
 }
 
 function appendAndTriggerFilterWithNewValue(appendInput) {
