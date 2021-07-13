@@ -237,49 +237,49 @@ var header = {
         field: "name", caption: "Name", width: 230,
         headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
-        "filterable": true
+        "clickable": true, "filterable": true,
     },
     "gender": {
         field: "gender", caption: "Gender", width: 90,
         headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
-        "filterable": true
+        "clickable": true, "filterable": true,
     },
     "age": {
         field: "age", caption: "Age", width: 60,
         headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
-        "filterable": true
+        "clickable": true, "filterable": true,
     },
     "country": {
         field: "country", caption: "Country", width: 90, columnType: 'image', style: {imageSizing: 'keep-aspect-ratio'},
         headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
-        "filterable": true, "icon_search": true
+        "clickable": true, "filterable": true, "icon_search": true,
     },
     "email": {
         field: "email", caption: "Email", width: 300,
         headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
-        "filterable": true
+        "clickable": true, "filterable": true,
     },
     "address": {
         field: "address", caption: "Address", width: "auto", style: {textOverflow: "ellipsis"},
         headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
-        "filterable": true
+        "clickable": true, "filterable": true,
     },
     "phone_number": {
         field: "phone_number", caption: "Phone number", width: 210,
         headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
-        "filterable": true
+        "clickable": true, "filterable": true,
     },
     "quote": {
         field: "quote", caption: "Quote", width: "auto", style: {textOverflow: "ellipsis"},
         headerType: 'sort', headerAction: 'sort', headerStyle: {sortArrowColor: 'red'},
         // custom properties
-        "filterable": true
+        "clickable": true, "filterable": true,
     }
 }
 
@@ -320,7 +320,8 @@ $(document).ready(function(){
     });
     setupFilter();
     counter.setLabels();
-    addDblClickEvents()
+    addDblClickEvents();
+    addHoverEvents();
 });
 
 function setupFilter() {
@@ -529,12 +530,27 @@ function addDblClickEvents() {
     });
 }
 
+function addHoverEvents() {
+    grid.listen(MOUSEENTER_CELL, (...args) => {
+        if(isOnClickableColumn(args[0]["col"])) {
+            document.body.style.cursor = "pointer";
+        }
+    });
+    grid.listen(MOUSELEAVE_CELL, (...args) => {
+        if(isOnClickableColumn(args[0]["col"])) {
+            document.body.style.cursor = "default";
+        }
+    });
+}
+
 function addCellDbClickEvent(args) {
     row = args[0]["row"];
     // ignore header
     if(row == 0) return;
     row -= 1;
     col = args[0]["col"];
+    if(!isOnClickableColumn(col)) return;
+
     fieldName = grid.header[col]["field"];
     cellValue = getClickedRow(row)[fieldName];
 
@@ -550,6 +566,11 @@ function addCellDbClickEvent(args) {
 function getClickedRow(row) {
     if(isGridSorted()) return getSortedIndexMap()[row];
     return getFilterRecord()[row];
+}
+
+function isOnClickableColumn(col) {
+    columnName = grid.header[col]["field"];
+    return header[columnName]["clickable"];
 }
 
 function appendAndTriggerFilterWithNewValue(appendInput) {
