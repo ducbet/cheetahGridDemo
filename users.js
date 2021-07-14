@@ -635,9 +635,9 @@ Features of this site:
         + Gender icon, flag icon, birthday-cake icon in counter bar: filter in a specific column by the corresponding value
         + Grid cell: filter in the clicked column by cell value
     - Click on header to sort by that column
+    ※ Hit F12 if you want to copy text in this alert message
 `;
     console.log(message);
-
     alert(message);
 }
 
