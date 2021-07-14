@@ -319,6 +319,7 @@ var filterDataSource = new cheetahGrid.data.FilterDataSource(new cheetahGrid.dat
 var counter = new Counter();
 
 $(document).ready(function(){
+    showIntroduce();
     // initialize
     grid = new cheetahGrid.ListGrid({
         // Parent element on which to place the grid
@@ -611,6 +612,33 @@ function fetchUsers() {
         counter.allUsersLabel.css("color", counter.black);
     })
     .catch(err => { throw err });
+}
+
+function showIntroduce() {
+    var message =
+`Welcome to the site!
+Features of this site:
+    - Use the cheetah-grid library to draw a grid table
+    - Filter-bar: case-insensitive text search
+        + Like-search (without space). E.g:    kasai
+        + Like-search (with space). E.g:    (Renee Sanders)
+        + Exact match. E.g:    "Viet Nam"
+        + Filter in a specific column. E.g:     89:age
+        + Autocomplete column name. Suggestion will be shown if you type (1) a colon ":" or (2) at least 3 characters of column name. E.g:     nam
+        ※ You can combine terms. E.g:     "Male":gender 26:age (Viet Nam):country 012345678900
+    - Counter bar:
+        + User icon: Show total rows
+        + Eye icon: Show number of rows after filter
+        + Gender icons, flag icons, birthday-cake icons: Show count each attribute after filter
+    - Double click event:
+        + User icon in counter bar: clear filter-bar
+        + Gender icon, flag icon, birthday-cake icon in counter bar: filter in a specific column by the corresponding value
+        + Grid cell: filter in the clicked column by cell value
+    - Click on header to sort by that column
+`;
+    console.log(message);
+
+    alert(message);
 }
 
 // jquery ui autocomplete

@@ -18,7 +18,7 @@ mock_data.append({
         "email": "trieuduc@gmail.com",
         "quote": "Nothing to say",
         "address": "Kitakasai",
-        "phone_number": fake.phone_number()
+        "phone_number": "012345678900"
     })
 
 for i in range(1, 100000):
