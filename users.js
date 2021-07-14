@@ -6,24 +6,31 @@ class Counter {
 
         // for countries flag
         this.baseUrl = "https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/";
-        // {"Vietnam": "https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/Vietnam.png"}
-        this.flagsUrl = {};
         // {"https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/Vietnam.png": "Vietnam"}
         this.flagsUrlInverted = {};
-        // {"Vietnam": jquery label}
-        this.countriesLabel = {}
-
-        // {"26": jquery container}
-        this.agesContainer = {}
-        // {"26": jquery label}
-        this.agesLabel= {}
 
         this.allUsers = 0;
         this.showingUsers = 0;
         this.showingMale = 0;
         this.showingFemale = 0;
-        this.showingCountry = {};
-        this.showingAge = {};
+        /*
+        {"26": {
+                "showing": 0,
+                "jqueryLabel": jquery label,
+                "container": jquery container
+            }
+        }
+        */
+        this.ages = {}
+        /*
+        {"Vietnam": {
+                "showing": 0,
+                "flagsUrl": "https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/Vietnam.png"},
+                "jqueryLabel": jquery label
+            }
+        }
+        */
+        this.countries = {};
 
         this.black = "#000";
         this.gray = "#D3D3D3";
@@ -42,10 +49,10 @@ class Counter {
         this.showingMaleLabel.text(this.showingMale);
         this.showingFemaleLabel.text(this.showingFemale);
         for (var age of this.getAges()) {
-            this.agesLabel[age].text(this.showingAge[age]);
+            this.ages[age]["jqueryLabel"].text(this.ages[age]["showing"]);
         }
         for (var country of this.getCountries()) {
-            this.countriesLabel[country].text(this.showingCountry[country]);
+            this.countries[country]["jqueryLabel"].text(this.countries[country]["showing"]);
         }
         this.displayTopAges();
         if(done) this.changeLabelsColor(this.black);
@@ -56,10 +63,10 @@ class Counter {
         this.showingMaleLabel.css("color", color);
         this.showingFemaleLabel.css("color", color);
         for (var age of this.getAges()) {
-            this.agesLabel[age].css("color", color);
+            this.ages[age]["jqueryLabel"].css("color", color);
         }
         for (var country of this.getCountries()) {
-            this.countriesLabel[country].css("color", color);
+            this.countries[country]["jqueryLabel"].css("color", color);
         }
     }
 
@@ -70,10 +77,10 @@ class Counter {
         this.showingMale = 0;
         this.showingFemale = 0;
         for (var age of this.getAges()) {
-            this.showingAge[age] = 0;
+            this.ages[age]["showing"] = 0;
         }
         for (var country of this.getCountries()) {
-            this.showingCountry[country] = 0;
+            this.countries[country]["showing"] = 0;
         }
 
         this.updateLabels(true);
@@ -85,8 +92,8 @@ class Counter {
         this.showingUsers++;
         if(record["gender"] == "Male") this.showingMale++;
         else this.showingFemale++;
-        this.showingAge[record["age"]]++;
-        this.showingCountry[this.getCountryName(record["country"])] += 1;
+        this.ages[[record["age"]]]["showing"]++;
+        this.countries[this.getCountryName(record["country"])]["showing"] += 1;
     }
 
     filterSessionExpired(filterId) {
@@ -128,20 +135,23 @@ class Counter {
         var countryCountLabel = $("<label>0</label>");
         countryCountLabel.attr("id", "count-" + this.standardizeCountryName(country));
         countryCountLabel.addClass("count-label");
-        this.countriesLabel[country] = countryCountLabel;
+        this.countries[country]["jqueryLabel"] = countryCountLabel;
         return countryCountLabel;
     }
 
     getCountryImgUrl(country) {
-        if(this.flagsUrl[country] == undefined) this.addCountry(country);
-        return this.flagsUrl[country];
+        if(this.countries[country] == undefined) this.addCountry(country);
+        return this.countries[country]["flagUrl"];
     }
 
     addCountry(country) {
         var imgUrl = this.baseUrl + this.getCountryImgName(country)
-        this.flagsUrl[country] = imgUrl;
+        var newCountry = {
+            "showing": 0,
+            "flagUrl": imgUrl
+        }
         this.flagsUrlInverted[imgUrl] = country;
-        this.showingCountry[country] = 0;
+        this.countries[country] = newCountry;
     }
 
     getCountryImgName(country) {
@@ -158,7 +168,7 @@ class Counter {
     }
 
     getCountries() {
-        return Object.keys(this.flagsUrl);
+        return Object.keys(this.countries);
     }
 
     addAgeCount(dataSource) {
@@ -166,13 +176,11 @@ class Counter {
         for(let user of dataSource) {
             let age = user["age"].toString();
             user["age"] = age;
-            if(age in this.showingAge) continue;
+            if(age in this.ages) continue;
 
-            this.showingAge[age] = 0;
-
-            var ageContainer = this.createAgeContainer(age);
-            count_container.append(ageContainer);
-            this.agesContainer[age] = ageContainer;
+            this.ages[age] = {"showing": 0};
+            this.ages[age]["container"] = this.createAgeContainer(age);
+            count_container.append(this.ages[age]["container"]);
         }
     }
 
@@ -203,22 +211,22 @@ class Counter {
         var ageCountLabel = $("<label>0</label>");
         ageCountLabel.attr("id", "count-age-" + age);
         ageCountLabel.addClass("count-label");
-        this.agesLabel[age] = ageCountLabel;
+        this.ages[age]["jqueryLabel"] = ageCountLabel;
         return ageCountLabel;
     }
 
     getAges() {
-        return Object.keys(this.showingAge);
+        return Object.keys(this.ages);
     }
 
     displayTopAges() {
         // Sort the array based on the showing count
-        var sorted = Object.entries(this.showingAge).sort(function(first, second) {
-            return second[1] - first[1];
+        var sorted = Object.entries(this.ages).sort(function(first, second) {
+            return second[1]["showing"] - first[1]["showing"];
         });
-        for(var [index, showingAge] of Object.entries(sorted)) {
-            var age = showingAge[0];
-            var ageContainer = this.agesContainer[age];
+        for(var [index, ages] of Object.entries(sorted)) {
+            var age = ages[0];
+            var ageContainer = this.ages[age]["container"];
             if(index >= this.visibleAgeNum) {
                 ageContainer.addClass("display-none");
                 continue;
