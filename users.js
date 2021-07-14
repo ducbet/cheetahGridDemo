@@ -164,7 +164,7 @@ class Counter {
     }
 
     standardizeCountryName(country) {
-        return country.replace(" ", "_");
+        return country.replace(" ", "_").toLowerCase();
     }
 
     getCountries() {
