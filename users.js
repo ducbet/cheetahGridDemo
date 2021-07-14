@@ -6,21 +6,22 @@ class Counter {
 
         // for countries flag
         this.baseUrl = "https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/";
-
-
         // {"https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/Vietnam.png": "Vietnam"}
         this.flagsUrlInverted = {};
-
-        // {"26": jquery container}
-        this.agesContainer = {}
-        // {"26": jquery label}
-        this.agesLabel= {}
 
         this.allUsers = 0;
         this.showingUsers = 0;
         this.showingMale = 0;
         this.showingFemale = 0;
-        this.showingAge = {};
+        /*
+        {"26": {
+                "showing": 0,
+                "jqueryLabel": jquery label,
+                "container": jquery container
+            }
+        }
+        */
+        this.ages = {}
         /*
         {"Vietnam": {
                 "showing": 0,
@@ -48,7 +49,7 @@ class Counter {
         this.showingMaleLabel.text(this.showingMale);
         this.showingFemaleLabel.text(this.showingFemale);
         for (var age of this.getAges()) {
-            this.agesLabel[age].text(this.showingAge[age]);
+            this.ages[age]["jqueryLabel"].text(this.ages[age]["showing"]);
         }
         for (var country of this.getCountries()) {
             this.countries[country]["jqueryLabel"].text(this.countries[country]["showing"]);
@@ -62,7 +63,7 @@ class Counter {
         this.showingMaleLabel.css("color", color);
         this.showingFemaleLabel.css("color", color);
         for (var age of this.getAges()) {
-            this.agesLabel[age].css("color", color);
+            this.ages[age]["jqueryLabel"].css("color", color);
         }
         for (var country of this.getCountries()) {
             this.countries[country]["jqueryLabel"].css("color", color);
@@ -76,7 +77,7 @@ class Counter {
         this.showingMale = 0;
         this.showingFemale = 0;
         for (var age of this.getAges()) {
-            this.showingAge[age] = 0;
+            this.ages[age]["showing"] = 0;
         }
         for (var country of this.getCountries()) {
             this.countries[country]["showing"] = 0;
@@ -91,7 +92,7 @@ class Counter {
         this.showingUsers++;
         if(record["gender"] == "Male") this.showingMale++;
         else this.showingFemale++;
-        this.showingAge[record["age"]]++;
+        this.ages[[record["age"]]]["showing"]++;
         this.countries[this.getCountryName(record["country"])]["showing"] += 1;
     }
 
@@ -175,13 +176,11 @@ class Counter {
         for(let user of dataSource) {
             let age = user["age"].toString();
             user["age"] = age;
-            if(age in this.showingAge) continue;
+            if(age in this.ages) continue;
 
-            this.showingAge[age] = 0;
-
-            var ageContainer = this.createAgeContainer(age);
-            count_container.append(ageContainer);
-            this.agesContainer[age] = ageContainer;
+            this.ages[age] = {"showing": 0};
+            this.ages[age]["container"] = this.createAgeContainer(age);
+            count_container.append(this.ages[age]["container"]);
         }
     }
 
@@ -212,22 +211,22 @@ class Counter {
         var ageCountLabel = $("<label>0</label>");
         ageCountLabel.attr("id", "count-age-" + age);
         ageCountLabel.addClass("count-label");
-        this.agesLabel[age] = ageCountLabel;
+        this.ages[age]["jqueryLabel"] = ageCountLabel;
         return ageCountLabel;
     }
 
     getAges() {
-        return Object.keys(this.showingAge);
+        return Object.keys(this.ages);
     }
 
     displayTopAges() {
         // Sort the array based on the showing count
-        var sorted = Object.entries(this.showingAge).sort(function(first, second) {
-            return second[1] - first[1];
+        var sorted = Object.entries(this.ages).sort(function(first, second) {
+            return second[1]["showing"] - first[1]["showing"];
         });
-        for(var [index, showingAge] of Object.entries(sorted)) {
-            var age = showingAge[0];
-            var ageContainer = this.agesContainer[age];
+        for(var [index, ages] of Object.entries(sorted)) {
+            var age = ages[0];
+            var ageContainer = this.ages[age]["container"];
             if(index >= this.visibleAgeNum) {
                 ageContainer.addClass("display-none");
                 continue;
