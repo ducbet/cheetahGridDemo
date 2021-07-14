@@ -6,7 +6,7 @@ class Counter {
 
         // for countries flag
         this.baseUrl = "https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/";
-        // {"https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/Vietnam.png": "Vietnam"}
+        // {"https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/Viet_Nam.png": "Viet_Nam"}
         this.flagsUrlInverted = {};
 
         this.allUsers = 0;
@@ -23,9 +23,9 @@ class Counter {
         */
         this.ages = {}
         /*
-        {"Vietnam": {
+        {"Viet_Nam": {
                 "showing": 0,
-                "flagsUrl": "https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/Vietnam.png"},
+                "flagsUrl": "https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/Viet_Nam.png"},
                 "jqueryLabel": jquery label
             }
         }

@@ -7,9 +7,21 @@ users_num = 100000
 mock_data = []
 
 genders = ["Male", "Female"]
-countries = ["Vietnam", "Japan", "Myanmar", "South Korea", "US"]
+countries = ["Viet Nam", "Japan", "Myanmar", "South Korea", "US"]
 
-for i in range(100000):
+mock_data.append({
+        "id": 0,
+        "name": "Triệu Minh Đức",
+        "gender": "Male",
+        "age": 26,
+        "country": "Viet Nam",
+        "email": "trieuduc@gmail.com",
+        "quote": "Nothing to say",
+        "address": "Kitakasai",
+        "phone_number": fake.phone_number()
+    })
+
+for i in range(1, 100000):
     mock_data.append({
         "id": i,
         "name": fake.name(),
@@ -19,18 +31,6 @@ for i in range(100000):
         "email": fake.email(),
         "quote": fake.sentence(),
         "address": fake.address(),
-        "phone_number": fake.phone_number()
-    })
-
-mock_data.append({
-        "id": users_num,
-        "name": "Triệu Minh Đức",
-        "gender": "Male",
-        "age": 26,
-        "country": "Vietnam",
-        "email": "trieuduc@gmail.com",
-        "quote": "Nothing to say",
-        "address": "Kitakasai",
         "phone_number": fake.phone_number()
     })
 
