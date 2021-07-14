@@ -6,12 +6,10 @@ class Counter {
 
         // for countries flag
         this.baseUrl = "https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/";
-        // {"Vietnam": "https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/Vietnam.png"}
-        this.flagsUrl = {};
+
+
         // {"https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/Vietnam.png": "Vietnam"}
         this.flagsUrlInverted = {};
-        // {"Vietnam": jquery label}
-        this.countriesLabel = {}
 
         // {"26": jquery container}
         this.agesContainer = {}
@@ -22,8 +20,16 @@ class Counter {
         this.showingUsers = 0;
         this.showingMale = 0;
         this.showingFemale = 0;
-        this.showingCountry = {};
         this.showingAge = {};
+        /*
+        {"Vietnam": {
+                "showing": 0,
+                "flagsUrl": "https://raw.githubusercontent.com/ducbet/cheetahGridDemo/master/flag_imgs/Vietnam.png"},
+                "jqueryLabel": jquery label
+            }
+        }
+        */
+        this.countries = {};
 
         this.black = "#000";
         this.gray = "#D3D3D3";
@@ -45,7 +51,7 @@ class Counter {
             this.agesLabel[age].text(this.showingAge[age]);
         }
         for (var country of this.getCountries()) {
-            this.countriesLabel[country].text(this.showingCountry[country]);
+            this.countries[country]["jqueryLabel"].text(this.countries[country]["showing"]);
         }
         this.displayTopAges();
         if(done) this.changeLabelsColor(this.black);
@@ -59,7 +65,7 @@ class Counter {
             this.agesLabel[age].css("color", color);
         }
         for (var country of this.getCountries()) {
-            this.countriesLabel[country].css("color", color);
+            this.countries[country]["jqueryLabel"].css("color", color);
         }
     }
 
@@ -73,7 +79,7 @@ class Counter {
             this.showingAge[age] = 0;
         }
         for (var country of this.getCountries()) {
-            this.showingCountry[country] = 0;
+            this.countries[country]["showing"] = 0;
         }
 
         this.updateLabels(true);
@@ -86,7 +92,7 @@ class Counter {
         if(record["gender"] == "Male") this.showingMale++;
         else this.showingFemale++;
         this.showingAge[record["age"]]++;
-        this.showingCountry[this.getCountryName(record["country"])] += 1;
+        this.countries[this.getCountryName(record["country"])]["showing"] += 1;
     }
 
     filterSessionExpired(filterId) {
@@ -128,20 +134,23 @@ class Counter {
         var countryCountLabel = $("<label>0</label>");
         countryCountLabel.attr("id", "count-" + this.standardizeCountryName(country));
         countryCountLabel.addClass("count-label");
-        this.countriesLabel[country] = countryCountLabel;
+        this.countries[country]["jqueryLabel"] = countryCountLabel;
         return countryCountLabel;
     }
 
     getCountryImgUrl(country) {
-        if(this.flagsUrl[country] == undefined) this.addCountry(country);
-        return this.flagsUrl[country];
+        if(this.countries[country] == undefined) this.addCountry(country);
+        return this.countries[country]["flagUrl"];
     }
 
     addCountry(country) {
         var imgUrl = this.baseUrl + this.getCountryImgName(country)
-        this.flagsUrl[country] = imgUrl;
+        var newCountry = {
+            "showing": 0,
+            "flagUrl": imgUrl
+        }
         this.flagsUrlInverted[imgUrl] = country;
-        this.showingCountry[country] = 0;
+        this.countries[country] = newCountry;
     }
 
     getCountryImgName(country) {
@@ -158,7 +167,7 @@ class Counter {
     }
 
     getCountries() {
-        return Object.keys(this.flagsUrl);
+        return Object.keys(this.countries);
     }
 
     addAgeCount(dataSource) {
