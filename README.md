@@ -11,7 +11,7 @@ Live demo: [https://jsfiddle.net/trieuduc1996/8wxagr1u/15/](https://jsfiddle.net
 <b>Simple search</b>: case-insensitive, terms are separated by space
 - gmail.com -> 16,900 users use @gmail.com
 <br>![gmail.gif](https://raw.githubusercontent.com/ducbet/cheetahGridDemo/update_readme/readme_resources/gmail.gif)
-- Andrew Jones -> search all fields with each term ("Andrew" and "Jones" can be in two different fields).
+- Andrew jones -> search all fields with each term ("Andrew" and "jones" can be in two different fields).
 <br>![aj.gif](https://raw.githubusercontent.com/ducbet/cheetahGridDemo/update_readme/readme_resources/aj.gif)
 
 <b>Phrase search</b> (contains spaces): use parentheses `()`
