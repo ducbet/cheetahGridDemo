@@ -2,7 +2,7 @@
 
 <b>Dataset</b>: The sample data contains information on 100,000 employees. Each record has the following fields: ID, Name, Gender, Age, Country, Email, Address, Phone number, and Quote.
 
-<b>Library</b>: [Cheetah Grid](https://github.com/future-architect/cheetah-grid) (for visualizing results)
+<b>Library</b>: jQuery, [Cheetah Grid](https://github.com/future-architect/cheetah-grid) (for visualizing results)
 
 <b>Caution</b>: To enable real-time search and visualization, the data must be downloaded to the front-end beforehand. There are security risks, so this should only be used with trusted devices/users.
 
